@@ -1,0 +1,192 @@
+fileFormatVersion: 2
+guid: f498f6e11aba1f541b30cb7bd59a793f
+timeCreated: 1510523765
+licenseType: Store
+ModelImporter:
+  serializedVersion: 21
+  fileIDToRecycleName:
+    100000: bishop_black
+    100002: bishop_white
+    100004: checker_black
+    100006: checker_white
+    100008: //RootNode
+    100010: king_black
+    100012: king_white
+    100014: knight_black
+    100016: knight_white
+    100018: pawn_black
+    100020: pawn_white
+    100022: queen_black
+    100024: queen_white
+    100026: rook_black
+    100028: rook_white
+    100030: tile_black
+    100032: tile_white
+    100034: board_tile_basic_black
+    100036: board_tile_basic_white
+    100038: board_corner_A
+    100040: board_edge_A
+    100042: board_tile_A
+    400000: bishop_black
+    400002: bishop_white
+    400004: checker_black
+    400006: checker_white
+    400008: //RootNode
+    400010: king_black
+    400012: king_white
+    400014: knight_black
+    400016: knight_white
+    400018: pawn_black
+    400020: pawn_white
+    400022: queen_black
+    400024: queen_white
+    400026: rook_black
+    400028: rook_white
+    400030: tile_black
+    400032: tile_white
+    400034: board_tile_basic_black
+    400036: board_tile_basic_white
+    400038: board_corner_A
+    400040: board_edge_A
+    400042: board_tile_A
+    2300000: bishop_black
+    2300002: bishop_white
+    2300004: checker_black
+    2300006: checker_white
+    2300008: king_black
+    2300010: king_white
+    2300012: knight_black
+    2300014: knight_white
+    2300016: pawn_black
+    2300018: pawn_white
+    2300020: queen_black
+    2300022: queen_white
+    2300024: rook_black
+    2300026: rook_white
+    2300028: tile_black
+    2300030: tile_white
+    2300032: board_tile_basic_black
+    2300034: board_tile_basic_white
+    2300036: board_corner_A
+    2300038: board_edge_A
+    2300040: board_tile_A
+    3300000: bishop_black
+    3300002: bishop_white
+    3300004: checker_black
+    3300006: checker_white
+    3300008: king_black
+    3300010: king_white
+    3300012: knight_black
+    3300014: knight_white
+    3300016: pawn_black
+    3300018: pawn_white
+    3300020: queen_black
+    3300022: queen_white
+    3300024: rook_black
+    3300026: rook_white
+    3300028: tile_black
+    3300030: tile_white
+    3300032: board_tile_basic_black
+    3300034: board_tile_basic_white
+    3300036: board_corner_A
+    3300038: board_edge_A
+    3300040: board_tile_A
+    4300000: bishop_black
+    4300002: bishop_white
+    4300004: checker_black
+    4300006: checker_white
+    4300008: king_black
+    4300010: king_white
+    4300012: knight_black
+    4300014: knight_white
+    4300016: pawn_black
+    4300018: pawn_white
+    4300020: queen_black
+    4300022: queen_white
+    4300024: rook_black
+    4300026: rook_white
+    4300028: tile_black
+    4300030: tile_white
+    4300032: board_tile_basic_black
+    4300034: board_tile_basic_white
+    4300036: board_corner_A
+    4300038: board_edge_A
+    4300040: board_tile_A
+    6400000: board_corner_A
+    6400002: board_edge_A
+    6400004: board_tile_A
+  materials:
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
