@@ -55,11 +55,21 @@ public class Pawn : ChessPiece
         return r;
     }
 
-    //en passan move for pawn
     public override Special_Move GetSpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int[]> ChessMove_list, ref List<Vector2Int> Avaiable_ChessMoves)
     {   
         int direction = (team == 0 ) ? 1 : -1;
 
+        //implementung Special_Move.promotion for pawn
+        /*promotion is the replacement of a pawn with a new piece when the pawn is moved to its last rank.
+        The player replaces the pawn immediately with a queen, rook, bishop, or knight of the same color.
+        The new piece does not have to be a previously captured piece.
+        Promotion is mandatory when moving to the last rank; the pawn cannot remain as a pawn.*/
+        if ((team == 0 && currentY == 6) || (team == 1 && currentY == 1))//if team is of whiteteam's pawn is at tile 6 or if team is of black team's pawn is at tile 1
+        {
+            return Special_Move.Promotion;
+        }
+
+        //en passan move for pawn
         if (ChessMove_list.Count > 0)
         {
             Vector2Int[] lastMoved_chess = ChessMove_list[ChessMove_list.Count - 1];

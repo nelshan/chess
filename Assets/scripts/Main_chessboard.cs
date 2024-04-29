@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -401,7 +402,7 @@ public class Main_chessboard : MonoBehaviour
         Application.Quit();
     }
     
-    //Process_Special_ChessMove mechanic
+    //Process_Special_ChessMove mechanic. note: Special_ChessMove is reset every time a player peek a chesspiece
     private void Process_Special_ChessMove()
     {
         //implementing Special_Move.EnPassant in main class
@@ -443,25 +444,56 @@ public class Main_chessboard : MonoBehaviour
                 }
             }
         }
+        
+        //implementing Special_Move.Promotion in main class
+        if (Special_ChessMove == Special_Move.Promotion)
+        {
+            Vector2Int[] PawnPromotion_Lastmove = ChessMove_list[ChessMove_list.Count - 1];
 
-        //implementing Special_Move.EnPassant in main class
+            ChessPiece TargetPawn = Active_chessPieces[PawnPromotion_Lastmove[1].x, PawnPromotion_Lastmove[1].y];//landing position of pawn will be "TargetPawn"
+
+            if (TargetPawn.type == ChessPieceType.Pawn)
+            {
+                //Special_Move.Promotion for white team
+                if (TargetPawn.team == 0 && PawnPromotion_Lastmove[1].y == 7)
+                {
+                    //now pawn has the ability for promotion. pawn can change to any chesspiece: queen, rook, bishop, or knight of the same color
+                    ChessPiece Pawn_to_QueenPromotion = SpawnSinglePices(ChessPieceType.Queen, 0);//spawnig queen piece cus of pawn promotion
+                    Destroy(Active_chessPieces[PawnPromotion_Lastmove[1].x, PawnPromotion_Lastmove[1].y].gameObject);//with new queen in chessboard. destroy the promoted pawn(ChessPiece TargetPawn) from the board
+                    Active_chessPieces[PawnPromotion_Lastmove[1].x, PawnPromotion_Lastmove[1].y] = Pawn_to_QueenPromotion;
+                    PositionSingle_ChessPieces(PawnPromotion_Lastmove[1].x, PawnPromotion_Lastmove[1].y);
+                }
+                //Special_Move.Promotion for black team
+                if (TargetPawn.team == 1 && PawnPromotion_Lastmove[1].y == 0)
+                {
+                    //now pawn has the ability for promotion. pawn can change to any chesspiece: queen, rook, bishop, or knight of the same color
+                    ChessPiece Pawn_to_QueenPromotion = SpawnSinglePices(ChessPieceType.Queen, 1);//spawnig queen piece cus of pawn promotion
+                    Destroy(Active_chessPieces[PawnPromotion_Lastmove[1].x, PawnPromotion_Lastmove[1].y].gameObject);//with new queen in chessboard. destroy the promoted pawn(ChessPiece TargetPawn) from the board
+                    Active_chessPieces[PawnPromotion_Lastmove[1].x, PawnPromotion_Lastmove[1].y] = Pawn_to_QueenPromotion;
+                    PositionSingle_ChessPieces(PawnPromotion_Lastmove[1].x, PawnPromotion_Lastmove[1].y);
+                }
+            }
+        
+        }
+
+        //implementing Special_Move.Castling in main class
         if (Special_ChessMove == Special_Move.Castling)
         {
-            Vector2Int[] lastmove = ChessMove_list[ChessMove_list.Count - 1];
+            Vector2Int[] RookCastling_lastmove = ChessMove_list[ChessMove_list.Count - 1];
 
             //[[this will confirm that king has done Special_Move.Castling able to move to the special move]]
             //checking left side of rook
             //if lastmove at index 1 at x-axis is 2
-            if (lastmove[1].x == 2)
+            if (RookCastling_lastmove[1].x == 2)
             {
-                if (lastmove[1].y == 0)//and if lastmove at index 1 at y-axis is 0, it's on white team
+                if (RookCastling_lastmove[1].y == 0)//and if lastmove at index 1 at y-axis is 0, it's on white team
                 {
                     ChessPiece Castling_rook = Active_chessPieces[0, 0]; //[0, 0] is position of white team's rook
                     Active_chessPieces[3, 0] = Castling_rook;//activate and make rook able to move at [3, 0]
                     PositionSingle_ChessPieces(3, 0);//after activating rook, position rook at (3, 0)
                     Active_chessPieces[0, 0] = null;//after positining rook at (3,0), make the actived rook value null. this way king can move to that tile
                 }
-                else if (lastmove[1].y == 7)//or if lastmove at index 1 at y-axis is 7, it's on black team
+                else if (RookCastling_lastmove[1].y == 7)//or if lastmove at index 1 at y-axis is 7, it's on black team
                 {
                     ChessPiece Castling_rook = Active_chessPieces[0, 7]; //[0, 7] is position of white team's rook
                     Active_chessPieces[3, 7] = Castling_rook;//activate and make rook able to move at [3, 7]
@@ -470,16 +502,16 @@ public class Main_chessboard : MonoBehaviour
                 }
             }
             //checking right side of rook
-            else if (lastmove[1].x == 6)
+            else if (RookCastling_lastmove[1].x == 6)
             {
-                if (lastmove[1].y == 0)//and if lastmove at index 1 at y-axis is 0, it's on white team
+                if (RookCastling_lastmove[1].y == 0)//and if lastmove at index 1 at y-axis is 0, it's on white team
                 {
                     ChessPiece Castling_rook = Active_chessPieces[7, 0]; //[7, 0] is position of white team's rook
                     Active_chessPieces[5, 0] = Castling_rook;//activate and make rook able to move at [5, 0]
                     PositionSingle_ChessPieces(5, 0);//after activating rook, position rook at (3, 0)
                     Active_chessPieces[7, 0] = null;//after positining rook at (7,0), make the actived rook value null. this way king can move to that tile
                 }
-                else if (lastmove[1].y == 7)//or if lastmove at index 1 at y-axis is 7, it's on black team
+                else if (RookCastling_lastmove[1].y == 7)//or if lastmove at index 1 at y-axis is 7, it's on black team
                 {
                     ChessPiece Castling_rook = Active_chessPieces[7, 7]; //[7, 7] is position of white team's rook
                     Active_chessPieces[5, 7] = Castling_rook;//activate and make rook able to move at [5, 7]
