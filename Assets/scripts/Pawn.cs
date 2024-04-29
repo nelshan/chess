@@ -55,11 +55,11 @@ public class Pawn : ChessPiece
         return r;
     }
 
+    //en passan move for pawn
     public override Special_Move GetSpecialMoves(ref ChessPiece[,] board, ref List<Vector2Int[]> ChessMove_list, ref List<Vector2Int> Avaiable_ChessMoves)
     {   
         int direction = (team == 0 ) ? 1 : -1;
 
-        //en passan move for pawn
         if (ChessMove_list.Count > 0)
         {
             Vector2Int[] lastMoved_chess = ChessMove_list[ChessMove_list.Count - 1];

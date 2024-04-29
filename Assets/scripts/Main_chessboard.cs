@@ -404,6 +404,7 @@ public class Main_chessboard : MonoBehaviour
     //Process_Special_ChessMove mechanic
     private void Process_Special_ChessMove()
     {
+        //implementing Special_Move.EnPassant in main class
         if (Special_ChessMove == Special_Move.EnPassant)
         {
             var newMove = ChessMove_list[ChessMove_list.Count - 1];
@@ -442,6 +443,52 @@ public class Main_chessboard : MonoBehaviour
                 }
             }
         }
+
+        //implementing Special_Move.EnPassant in main class
+        if (Special_ChessMove == Special_Move.Castling)
+        {
+            Vector2Int[] lastmove = ChessMove_list[ChessMove_list.Count - 1];
+
+            //[[this will confirm that king has done Special_Move.Castling able to move to the special move]]
+            //checking left side of rook
+            //if lastmove at index 1 at x-axis is 2
+            if (lastmove[1].x == 2)
+            {
+                if (lastmove[1].y == 0)//and if lastmove at index 1 at y-axis is 0, it's on white team
+                {
+                    ChessPiece Castling_rook = Active_chessPieces[0, 0]; //[0, 0] is position of white team's rook
+                    Active_chessPieces[3, 0] = Castling_rook;//activate and make rook able to move at [3, 0]
+                    PositionSingle_ChessPieces(3, 0);//after activating rook, position rook at (3, 0)
+                    Active_chessPieces[0, 0] = null;//after positining rook at (3,0), make the actived rook value null. this way king can move to that tile
+                }
+                else if (lastmove[1].y == 7)//or if lastmove at index 1 at y-axis is 7, it's on black team
+                {
+                    ChessPiece Castling_rook = Active_chessPieces[0, 7]; //[0, 7] is position of white team's rook
+                    Active_chessPieces[3, 7] = Castling_rook;//activate and make rook able to move at [3, 7]
+                    PositionSingle_ChessPieces(3, 7);//after activating rook, position rook at (3, 7)
+                    Active_chessPieces[0, 7] = null;//after positining rook at (3, 7), make the actived rook value null. this way king can move to that tile
+                }
+            }
+            //checking right side of rook
+            else if (lastmove[1].x == 6)
+            {
+                if (lastmove[1].y == 0)//and if lastmove at index 1 at y-axis is 0, it's on white team
+                {
+                    ChessPiece Castling_rook = Active_chessPieces[7, 0]; //[7, 0] is position of white team's rook
+                    Active_chessPieces[5, 0] = Castling_rook;//activate and make rook able to move at [5, 0]
+                    PositionSingle_ChessPieces(5, 0);//after activating rook, position rook at (3, 0)
+                    Active_chessPieces[7, 0] = null;//after positining rook at (7,0), make the actived rook value null. this way king can move to that tile
+                }
+                else if (lastmove[1].y == 7)//or if lastmove at index 1 at y-axis is 7, it's on black team
+                {
+                    ChessPiece Castling_rook = Active_chessPieces[7, 7]; //[7, 7] is position of white team's rook
+                    Active_chessPieces[5, 7] = Castling_rook;//activate and make rook able to move at [5, 7]
+                    PositionSingle_ChessPieces(5, 7);//after activating rook, position rook at (5, 7)
+                    Active_chessPieces[7, 7] = null;//after positining rook at (7, 7), make the actived rook value null. this way king can move to that tile
+                }
+            }
+        }
+
     }
 
 
