@@ -5,6 +5,14 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 
+public enum Special_Move
+{
+    None = 0,
+    EnPassant,
+    Castling,
+    Promotion
+}
+
 public class Main_chessboard : MonoBehaviour
 {
     [Header("Materials")]
@@ -45,6 +53,10 @@ public class Main_chessboard : MonoBehaviour
     private List<ChessPiece> DeadBlack = new List<ChessPiece>();//this will store all the black chesspieces that is distroy my white chesspieces
     private List<Vector2Int> Avaiable_ChessMoves = new List<Vector2Int>();
     private bool Is_WhiteTeam_turn;
+
+    //implementing special move
+    private List<Vector2Int[]> ChessMove_list = new List<Vector2Int[]>();
+    private Special_Move Special_ChessMove;
 
 
     private void Awake()
@@ -110,7 +122,11 @@ public class Main_chessboard : MonoBehaviour
                         
                         //get a list of Avaiable ChessMoves of the given chesspieces and also hightlight the tiles 
                         Avaiable_ChessMoves = Current_ChessPiece_dragging.GetAvaiable_ChessMove(ref Active_chessPieces, Tile_Count_X, Tile_Count_Y);
-                        HighlightTiles();
+                        
+                        // when playe click on chesspiece and get a list of special chess move
+                        Special_ChessMove = Current_ChessPiece_dragging.GetSpecialMoves(ref Active_chessPieces, ref ChessMove_list, ref Avaiable_ChessMoves);
+                        
+                        HighlightTiles();//as this is link to the Avaiable_ChessMoves, it only show that move that is set on chesspieces
                     }
                 }
             }
@@ -350,7 +366,8 @@ public class Main_chessboard : MonoBehaviour
 
         //clean up and reseting the list of chesspieces array that is saved on memmory
         Current_ChessPiece_dragging = null;
-        Avaiable_ChessMoves = new List<Vector2Int>();
+        Avaiable_ChessMoves.Clear();
+        ChessMove_list.Clear();
 
         for (int x = 0; x < Tile_Count_X; x++)
         {
@@ -384,11 +401,55 @@ public class Main_chessboard : MonoBehaviour
         Application.Quit();
     }
     
+    //Process_Special_ChessMove mechanic
+    private void Process_Special_ChessMove()
+    {
+        if (Special_ChessMove == Special_Move.EnPassant)
+        {
+            var newMove = ChessMove_list[ChessMove_list.Count - 1];
+            ChessPiece PlayerPawn_ChessPiece = Active_chessPieces[newMove[1].x, newMove[1].y];
+            
+            var Target_PawnPositionMove = ChessMove_list[ChessMove_list.Count - 2];
+            ChessPiece EnemyPawn_ChessPiece = Active_chessPieces[Target_PawnPositionMove[1].x, Target_PawnPositionMove[1].y];
+
+            if (PlayerPawn_ChessPiece.currentX == EnemyPawn_ChessPiece.currentX)
+            {
+                if (PlayerPawn_ChessPiece.currentY == EnemyPawn_ChessPiece.currentY - 1 || PlayerPawn_ChessPiece.currentY == EnemyPawn_ChessPiece.currentY + 1)
+                {
+                    if (EnemyPawn_ChessPiece.team == 0)
+                    {
+                        //this will occur if it black that do EnPassant
+                        DeadWhite.Add(EnemyPawn_ChessPiece);
+                        EnemyPawn_ChessPiece.SetScale(Vector3.one * Dead_ChessSize);
+                        EnemyPawn_ChessPiece.SetPosition(
+                        new Vector3(8 * tileSize, yoffset, -1 * tileSize) - bounds 
+                        + new Vector3(tileSize / 2, 0, tileSize / 2) 
+                        + DeadSpacing * DeadWhite.Count * Vector3.forward
+                        );
+                    }
+                    else
+                    {
+                        //this will occur if it white that do EnPassant
+                        DeadBlack.Add(EnemyPawn_ChessPiece);
+                        EnemyPawn_ChessPiece.SetScale(Vector3.one * Dead_ChessSize);
+                        EnemyPawn_ChessPiece.SetPosition(
+                        new Vector3(8 * tileSize, yoffset, -1 * tileSize) - bounds 
+                        + new Vector3(tileSize / 2, 0, tileSize / 2) 
+                        + DeadSpacing * DeadBlack.Count * Vector3.forward
+                        );
+                    }
+                    Active_chessPieces[EnemyPawn_ChessPiece.currentX, EnemyPawn_ChessPiece.currentY] = null;
+                }
+            }
+        }
+    }
+
+
     //operation
     private bool MoveTo(ChessPiece ChessPieceType_reference, int x, int y)
     {
         //this function only allow the chess piece to move on "highlited tile", as highlited tile is set as each chesspieces vaild move
-        if (!ContainValid_ChessMove(ref Avaiable_ChessMoves, new Vector2(x, y)))
+        if (!ContainValid_ChessMove(ref Avaiable_ChessMoves, new Vector2Int(x, y)))
         {
             return false;
         }
@@ -450,7 +511,10 @@ public class Main_chessboard : MonoBehaviour
         PositionSingle_ChessPieces(x, y);
 
         Is_WhiteTeam_turn = !Is_WhiteTeam_turn;//turning Is_WhiteTeam_turn=true into falsh(for now)
+        ChessMove_list.Add(new Vector2Int[] {previousChess_Position, new Vector2Int(x, y)});//this will store all the chess move that happen
         
+        Process_Special_ChessMove();
+
         return true;
     }
     private Vector2Int LookupTileIndex(GameObject hitInfo)
@@ -467,7 +531,7 @@ public class Main_chessboard : MonoBehaviour
         }
         return -Vector2Int.one;// this code can be deleted, as this will give result(-1 -1) which will cus the game to crash, but as the tile is always generated no need to worry
     }
-    private bool ContainValid_ChessMove(ref List<Vector2Int> ChessPiece_moves, Vector2 ChessPiece_Position)
+    private bool ContainValid_ChessMove(ref List<Vector2Int> ChessPiece_moves, Vector2Int ChessPiece_Position)
     {
         for (int i = 0; i < ChessPiece_moves.Count; i++)
         {
