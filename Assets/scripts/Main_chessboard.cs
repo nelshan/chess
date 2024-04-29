@@ -39,11 +39,14 @@ public class Main_chessboard : MonoBehaviour
     private List<ChessPiece> DeadWhite = new List<ChessPiece>();//this will store all the white chesspieces that is distroy my black chesspieces
     private List<ChessPiece> DeadBlack = new List<ChessPiece>();//this will store all the black chesspieces that is distroy my white chesspieces
     private List<Vector2Int> Avaiable_ChessMoves = new List<Vector2Int>();
-
+    private bool Is_WhiteTeam_turn;
 
 
     private void Awake()
     {
+        //adding the function for turn base, for now, white turn is true,so it will alway be white turn(change this to ramdom trun)
+        Is_WhiteTeam_turn = true;
+
         // Generate all the tiles on the chessboard
         GenerateAllTiles(tileSize, Tile_Count_X , Tile_Count_Y );
 
@@ -96,7 +99,7 @@ public class Main_chessboard : MonoBehaviour
                 if (Active_chessPieces[hitPosition.x, hitPosition.y] != null)
                 {
                     //is it our turn
-                    if (true)
+                    if ((Active_chessPieces[hitPosition.x, hitPosition.y].team == 0 && Is_WhiteTeam_turn) || (Active_chessPieces[hitPosition.x, hitPosition.y].team == 1 && !Is_WhiteTeam_turn))
                     {
                         Current_ChessPiece_dragging = Active_chessPieces[hitPosition.x, hitPosition.y];
                         
@@ -373,6 +376,8 @@ public class Main_chessboard : MonoBehaviour
         Active_chessPieces[previousChess_Position.x, previousChess_Position.y] = null;
 
         PositionSingle_ChessPieces(x, y);
+
+        Is_WhiteTeam_turn = !Is_WhiteTeam_turn;//turning Is_WhiteTeam_turn=true into falsh(for now)
         
         return true;
     }
