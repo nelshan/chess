@@ -35,14 +35,14 @@ public class ChessPiece : MonoBehaviour
         }
     }
 
-    public List<Vector2Int> GetAvaiable_ChessMove(ref ChessPiece[,] board, int TileCounX, int TileCountY)
+    public virtual List<Vector2Int> GetAvaiable_ChessMove(ref ChessPiece[,] board, int TileCounX, int TileCountY)
     {
         List<Vector2Int> r = new List<Vector2Int>();
 
-        r.Add(new Vector2Int(3, 3));
+        /*r.Add(new Vector2Int(3, 3));
         r.Add(new Vector2Int(3, 4));
         r.Add(new Vector2Int(4, 3));
-        r.Add(new Vector2Int(4, 4));
+        r.Add(new Vector2Int(4, 4));*/
 
         return r;
 

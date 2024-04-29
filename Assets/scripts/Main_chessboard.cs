@@ -8,7 +8,7 @@ public class Main_chessboard : MonoBehaviour
     [Header("Materials")]
     [SerializeField] private Material tileMaterial;
     [SerializeField] private Material hoverMaterial;
-    [SerializeField] private Material highlightMaterial;
+    
 
     [Header("Align Generated Tiles with chess board Model")]
     [SerializeField] private float tileSize = 0.99f;
@@ -65,7 +65,7 @@ public class Main_chessboard : MonoBehaviour
         // Handle tile selection when the player clicks on a tile
         RaycastHit RayCastHit_Info;
         Ray ray = currentCamera.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out RayCastHit_Info, 100, LayerMask.GetMask("Tile", "Hover", "Highlight")))//as raycast will hit all the tile that has layer name"Tile" based on input of mousePosition
+        if (Physics.Raycast(ray, out RayCastHit_Info, 100, LayerMask.GetMask("Tile", "Hover", "Highlight")))//as raycast will hit all the tile that has "layer's name". based on input of mousePosition
         {
             // Handle tile selection logic here
             Vector2Int hitPosition = LookupTileIndex(RayCastHit_Info.transform.gameObject);
@@ -81,9 +81,11 @@ public class Main_chessboard : MonoBehaviour
             //this loop is for "if the mouse is already hovering a tile, change to privious one"
             if (currentMouse_Hover != hitPosition)
             {
-                tiles[currentMouse_Hover.x, currentMouse_Hover.y].layer = LayerMask.NameToLayer("Tile");
+                tiles[currentMouse_Hover.x, currentMouse_Hover.y].layer = ContainValid_ChessMove(ref Avaiable_ChessMoves, currentMouse_Hover) ? LayerMask.NameToLayer("Highlight") : LayerMask.NameToLayer("Tile");
                 tiles[currentMouse_Hover.x, currentMouse_Hover.y].GetComponent<MeshRenderer>().material = tileMaterial;
+                
                 currentMouse_Hover = hitPosition;
+                
                 tiles[hitPosition.x, hitPosition.y].layer = LayerMask.NameToLayer("Hover");
                 tiles[hitPosition.x, hitPosition.y].GetComponent<MeshRenderer>().material = hoverMaterial;
             }
@@ -98,7 +100,7 @@ public class Main_chessboard : MonoBehaviour
                     {
                         Current_ChessPiece_dragging = Active_chessPieces[hitPosition.x, hitPosition.y];
                         
-                        //get a list of Avaiable ChessMoves of the given chesspieces
+                        //get a list of Avaiable ChessMoves of the given chesspieces and also hightlight the tiles 
                         Avaiable_ChessMoves = Current_ChessPiece_dragging.GetAvaiable_ChessMove(ref Active_chessPieces, Tile_Count_X, Tile_Count_Y);
                         HighlightTiles();
                     }
@@ -128,9 +130,9 @@ public class Main_chessboard : MonoBehaviour
             //this loop is for "when mouse crosshair goes outside of chess board"
             if (currentMouse_Hover != -Vector2Int.one)
             {
-                tiles[currentMouse_Hover.x, currentMouse_Hover.y].layer = LayerMask.NameToLayer("Tile");
+                tiles[currentMouse_Hover.x, currentMouse_Hover.y].layer = ContainValid_ChessMove(ref Avaiable_ChessMoves, currentMouse_Hover) ? LayerMask.NameToLayer("Highlight") : LayerMask.NameToLayer("Tile");
                 currentMouse_Hover = -Vector2Int.one;
-                Debug.Log("raycast and mouse crosshair is out of chessboard");
+                //Debug.Log("raycast and mouse crosshair is out of chessboard");
             }
 
             if (Current_ChessPiece_dragging && Input.GetMouseButtonUp(0))
@@ -158,11 +160,12 @@ public class Main_chessboard : MonoBehaviour
         foreach (var tileIndex in Avaiable_ChessMoves)
         {
             tiles[tileIndex.x, tileIndex.y].layer = LayerMask.NameToLayer("Highlight");
-            tiles[tileIndex.x, tileIndex.y].GetComponent<MeshRenderer>().material = highlightMaterial;
+            //tiles[tileIndex.x, tileIndex.y].GetComponent<MeshRenderer>().material = highlightMaterial;
 
             // Check if the mouse is currently hovering over this tile
             if (currentMouse_Hover == tileIndex)
             {
+                tiles[tileIndex.x, tileIndex.y].layer = LayerMask.NameToLayer("Hover");
                 tiles[tileIndex.x, tileIndex.y].GetComponent<MeshRenderer>().material = hoverMaterial;
             }
         }
@@ -265,10 +268,10 @@ public class Main_chessboard : MonoBehaviour
         Active_chessPieces[5, 0] =SpawnSinglePices(ChessPieceType.Bishop, whiteTeam);
         Active_chessPieces[6, 0] =SpawnSinglePices(ChessPieceType.Knight, whiteTeam);
         Active_chessPieces[7, 0] =SpawnSinglePices(ChessPieceType.Rook, whiteTeam);
-        for (int pawn=0; pawn<Tile_Count_X; pawn++)
+        /*for (int pawn=0; pawn<Tile_Count_X; pawn++)
         {
             Active_chessPieces[pawn, 1] =SpawnSinglePices(ChessPieceType.Pawn, whiteTeam);
-        }
+        }*/
 
         //spawn point of black team
         Active_chessPieces[0, 7] =SpawnSinglePices(ChessPieceType.Rook, blackTeam);
@@ -279,10 +282,10 @@ public class Main_chessboard : MonoBehaviour
         Active_chessPieces[5, 7] =SpawnSinglePices(ChessPieceType.Bishop, blackTeam);
         Active_chessPieces[6, 7] =SpawnSinglePices(ChessPieceType.Knight, blackTeam);
         Active_chessPieces[7, 7] =SpawnSinglePices(ChessPieceType.Rook, blackTeam);
-        for (int pawn=0; pawn<Tile_Count_X; pawn++)
+        /*for (int pawn=0; pawn<Tile_Count_X; pawn++)
         {
             Active_chessPieces[pawn, 6] =SpawnSinglePices(ChessPieceType.Pawn, blackTeam);
-        }
+        }*/
 
     }
     private ChessPiece SpawnSinglePices(ChessPieceType type, int team)
@@ -322,6 +325,12 @@ public class Main_chessboard : MonoBehaviour
     //operation
     private bool MoveTo(ChessPiece ChessPieceType_reference, int x, int y)
     {
+        //this function only allow the chess piece to move on "highlited tile", as highlited tile is set as each chesspieces vaild move
+        if (!ContainValid_ChessMove(ref Avaiable_ChessMoves, new Vector2(x, y)))
+        {
+            return false;
+        }
+
         Vector2Int previousChess_Position = new Vector2Int(ChessPieceType_reference.currentX, ChessPieceType_reference.currentY);
 
         //is there another chesspiece on the target position
