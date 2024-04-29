@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public enum ChessPieceType
@@ -23,7 +24,11 @@ public class ChessPiece : MonoBehaviour
     private bool gradualScale = false; // Added variable to control gradual scaling
 
 
-
+    /*this start is for fixing the chess rotation. neede fix
+    private void Start()
+    {
+        transform.rotation = quaternion.Euler((team == 0) ? new Vector3 (0,0,0) : new Vector3(0,0,0));
+    }*/
 
     void Update()
     {

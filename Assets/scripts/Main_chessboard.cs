@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 
 public class Main_chessboard : MonoBehaviour
@@ -27,6 +29,9 @@ public class Main_chessboard : MonoBehaviour
     // Constants
     private const int Tile_Count_X  = 8;// Define the dimensions of the chessboard
     private const int Tile_Count_Y  = 8;// Define the dimensions of the chessboard
+
+    [Header("Vectory UI")]
+    [SerializeField] private GameObject VectoryUI_Screen;
 
     
     // References
@@ -271,10 +276,10 @@ public class Main_chessboard : MonoBehaviour
         Active_chessPieces[5, 0] =SpawnSinglePices(ChessPieceType.Bishop, whiteTeam);
         Active_chessPieces[6, 0] =SpawnSinglePices(ChessPieceType.Knight, whiteTeam);
         Active_chessPieces[7, 0] =SpawnSinglePices(ChessPieceType.Rook, whiteTeam);
-        /*for (int pawn=0; pawn<Tile_Count_X; pawn++)
+        for (int pawn=0; pawn<Tile_Count_X; pawn++)
         {
             Active_chessPieces[pawn, 1] =SpawnSinglePices(ChessPieceType.Pawn, whiteTeam);
-        }*/
+        }
 
         //spawn point of black team
         Active_chessPieces[0, 7] =SpawnSinglePices(ChessPieceType.Rook, blackTeam);
@@ -285,10 +290,10 @@ public class Main_chessboard : MonoBehaviour
         Active_chessPieces[5, 7] =SpawnSinglePices(ChessPieceType.Bishop, blackTeam);
         Active_chessPieces[6, 7] =SpawnSinglePices(ChessPieceType.Knight, blackTeam);
         Active_chessPieces[7, 7] =SpawnSinglePices(ChessPieceType.Rook, blackTeam);
-        /*for (int pawn=0; pawn<Tile_Count_X; pawn++)
+        for (int pawn=0; pawn<Tile_Count_X; pawn++)
         {
             Active_chessPieces[pawn, 6] =SpawnSinglePices(ChessPieceType.Pawn, blackTeam);
-        }*/
+        }
 
     }
     private ChessPiece SpawnSinglePices(ChessPieceType type, int team)
@@ -325,6 +330,60 @@ public class Main_chessboard : MonoBehaviour
     {
         return new Vector3(x * tileSize, yoffset, y * tileSize) - bounds + new Vector3(tileSize / 2, 0, tileSize / 2);
     }
+    
+    //checkmate mechanic
+    private void CheckMate(int Checkmated_team)
+    {
+        Display_VictoryUI(Checkmated_team);
+    }
+    private void Display_VictoryUI(int Winning_team)
+    {
+        VectoryUI_Screen.SetActive(true);
+        VectoryUI_Screen.transform.GetChild(Winning_team).gameObject.SetActive(true);
+    }
+    public void On_ResetButton()
+    {
+        //swiching off all the UI
+        VectoryUI_Screen.transform.GetChild(0).gameObject.SetActive(false);
+        VectoryUI_Screen.transform.GetChild(1).gameObject.SetActive(false);
+        VectoryUI_Screen.SetActive(false);
+
+        //clean up and reseting the list of chesspieces array that is saved on memmory
+        Current_ChessPiece_dragging = null;
+        Avaiable_ChessMoves = new List<Vector2Int>();
+
+        for (int x = 0; x < Tile_Count_X; x++)
+        {
+            for (int y = 0; y < Tile_Count_Y; y++)
+            {
+                if (Active_chessPieces[x, y] != null)
+                {
+                    Destroy(Active_chessPieces[x, y].gameObject);
+                }
+
+                Active_chessPieces[x, y] = null;
+            }
+        }
+        for (int i = 0; i < DeadWhite.Count; i++)
+        {
+            Destroy(DeadWhite[i].gameObject);
+        }
+        for (int i = 0; i < DeadBlack.Count; i++)
+        {
+            Destroy(DeadBlack[i].gameObject);
+        }
+        DeadWhite.Clear();
+        DeadBlack.Clear();
+
+        SpawnAllPices();
+        PositionAll_ChessPieces();
+        Is_WhiteTeam_turn = true;
+    }
+    public void On_ExitButton()
+    {
+        Application.Quit();
+    }
+    
     //operation
     private bool MoveTo(ChessPiece ChessPieceType_reference, int x, int y)
     {
@@ -347,9 +406,15 @@ public class Main_chessboard : MonoBehaviour
                 return false;
             }
 
-            //if the the black chesspieces has distroy the white chesspieces, let white chesspieces move to dead space
+            //if the the black chesspieces has death/distroy the white chesspieces, let white chesspieces move to dead space
             if (OtherChessPiece.team == 0)
             {
+                //if white chesspieces that is death/distroy is king, black win
+                if (OtherChessPiece.type == ChessPieceType.King)
+                {
+                    CheckMate(1);
+                }
+
                 DeadWhite.Add(OtherChessPiece);
                 OtherChessPiece.SetScale(Vector3.one * Dead_ChessSize);
                 OtherChessPiece.SetPosition(
@@ -360,6 +425,13 @@ public class Main_chessboard : MonoBehaviour
             }
             else
             {
+                //if black chesspieces that is death/distroy is king, white win
+                if (OtherChessPiece.type == ChessPieceType.King)
+                {
+                    CheckMate(0);
+                }
+
+
                 //if the the white chesspieces has distroy the black chesspieces, let black chesspieces move to dead space
                 DeadBlack.Add(OtherChessPiece);
                 OtherChessPiece.SetScale(Vector3.one * Dead_ChessSize);
