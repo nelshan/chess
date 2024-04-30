@@ -352,6 +352,74 @@ public class Main_chessboard : MonoBehaviour
     }
     
     //checkmate mechanic
+    private bool CheckForCheckMate()
+    {
+        // Initialize lists to store defending and attacking chess pieces
+        var LastMove = ChessMove_list[ChessMove_list.Count - 1];
+        int TargetTeam = (Active_chessPieces[LastMove[1].x, LastMove[1].y].team == 0) ? 1 : 0;//if last team to move is equal to "0" whitteam,return "1" blackteam, else last team to move is blackteam
+
+        List<ChessPiece> attackingChessPiece = new List<ChessPiece>();
+        List<ChessPiece> defendingChessPiece = new List<ChessPiece>();
+        
+        //// Find defending and attacking chess pieces
+        ChessPiece Target_KingPosition = null;
+        for (int x = 0; x < Tile_Count_X; x++)
+        {
+            for (int y = 0; y < Tile_Count_Y; y++)
+            {
+                if (Active_chessPieces[x, y] != null)
+                {
+                    // Check if the current piece belongs to the target team
+                    if (Active_chessPieces[x, y].team == TargetTeam)
+                    {
+                        defendingChessPiece.Add(Active_chessPieces[x, y]);
+
+                        // If the current piece is a king, set it as the target king position
+                        if (Active_chessPieces[x, y].type == ChessPieceType.King)
+                        {
+                            Target_KingPosition = Active_chessPieces[x, y];
+                        }
+                    }
+                    else
+                    {
+                        // If the current piece belongs to the opposing team, add it to the list of attacking pieces
+                        attackingChessPiece.Add(Active_chessPieces[x, y]);
+                    }
+                }
+            }
+        }
+        ////geting and setting reference
+        ///
+        
+        //is king attacking right now
+        List<Vector2Int> CurrentAvailableChessMoves = new List<Vector2Int>();
+        for (int i = 0; i < attackingChessPiece.Count; i++)
+        {
+            var pieceMoves = attackingChessPiece[i].GetAvaiable_ChessMove(ref Active_chessPieces, Tile_Count_X, Tile_Count_Y);
+            for (int b = 0; b < pieceMoves.Count; b++)
+            {
+                CurrentAvailableChessMoves.Add(pieceMoves[b]);
+            }
+        }
+        
+        //is player in checkmate right now
+        if (ContainValid_ChessMove(ref CurrentAvailableChessMoves, new Vector2Int(Target_KingPosition.currentX, Target_KingPosition.currentY)))
+        {
+            //if king can be attack, check if enemy player can move any chesspiece to counter the attack
+            for (int i=0; i<defendingChessPiece.Count; i++)
+            {
+                List<Vector2Int> defendingMove = defendingChessPiece[i].GetAvaiable_ChessMove(ref Active_chessPieces, Tile_Count_X, Tile_Count_Y);
+                SimulatedMoveFor_SingleChessPiece(defendingChessPiece[i], ref defendingMove, Target_KingPosition);
+
+                if (defendingMove.Count != 0)// if enemy player can move any chesspiece to counter attack, the player checkmate move
+                {
+                    return false;
+                }
+            }
+            return true;//if return is true, it will call for CheckForCheckMate
+        }
+        return false;//if the king is not in attacking turn(ContainValid_ChessMove), it is checkmate 
+    }
     private void CheckMate(int Checkmated_team)
     {
         Display_VictoryUI(Checkmated_team);
@@ -725,6 +793,11 @@ public class Main_chessboard : MonoBehaviour
         ChessMove_list.Add(new Vector2Int[] {previousChess_Position, new Vector2Int(x, y)});//this will store all the chess move that happen
         
         Process_Special_ChessMove();
+
+        if (CheckForCheckMate())
+        {
+            CheckMate(ChessPieceType_reference.team);
+        }
 
         return true;
     }
