@@ -58,6 +58,7 @@ public class Main_chessboard : MonoBehaviour
     //implementing special move
     private List<Vector2Int[]> ChessMove_list = new List<Vector2Int[]>();
     private Special_Move Special_ChessMove;
+    
 
 
     private void Awake()
@@ -124,9 +125,11 @@ public class Main_chessboard : MonoBehaviour
                         //get a list of Avaiable ChessMoves of the given chesspieces and also hightlight the tiles 
                         Avaiable_ChessMoves = Current_ChessPiece_dragging.GetAvaiable_ChessMove(ref Active_chessPieces, Tile_Count_X, Tile_Count_Y);
                         
-                        // when playe click on chesspiece and get a list of special chess move
+                        // when playe click on chesspiece, get a list of special chess move
                         Special_ChessMove = Current_ChessPiece_dragging.GetSpecialMoves(ref Active_chessPieces, ref ChessMove_list, ref Avaiable_ChessMoves);
                         
+                        Prevent_King_Checkmate();
+
                         HighlightTiles();//as this is link to the Avaiable_ChessMoves, it only show that move that is set on chesspieces
                     }
                 }
@@ -522,7 +525,136 @@ public class Main_chessboard : MonoBehaviour
         }
 
     }
+    
+    //machanic for PreventCheckMate
+    private void Prevent_King_Checkmate()
+    {
+        ChessPiece Target_KingPosition = null;
+        // Flag to check if the king is found
+        bool kingFound = false;
 
+        // Find the king for the current player's team
+        for (int x = 0; x < Tile_Count_X; x++)
+        {
+            for (int y = 0; y < Tile_Count_Y; y++)
+            {
+                if (Active_chessPieces[x, y] != null && Active_chessPieces[x, y].type == ChessPieceType.King && Active_chessPieces[x, y].team == Current_ChessPiece_dragging.team)
+                {
+                    Target_KingPosition = Active_chessPieces[x, y];
+                    kingFound = true;
+                    break;  // Exit the loop once the king is found
+                }
+            }
+            if (kingFound){
+                break;  // Exit the outer loop if the king is found
+            }
+        }
+
+    // Check if a king was found before proceeding
+        if (kingFound)
+        {
+            // Prevent checkmate by simulating moves
+            SimulatedMoveFor_SingleChessPiece(Current_ChessPiece_dragging, ref Avaiable_ChessMoves, Target_KingPosition);
+        }
+        else
+        {
+            // Handle the case where no king is found (e.g., game over)
+            Debug.LogError("No king found for the current player's team!");
+        }   
+    }    
+    //machanic for simulating a chesspiece for PreventCheckMate
+    private void SimulatedMoveFor_SingleChessPiece(ChessPiece Simulated_chessPiece, ref List<Vector2Int> SimulatedChessPiece_Moves, ChessPiece Target_KingPosition)
+    {
+        //save current values, to reset after the function call
+        int actualChess_PositionAt_X = Simulated_chessPiece.currentX;
+        int actualChess_PositionAt_Y = Simulated_chessPiece.currentY;
+        List<Vector2Int> List_Of_Move_to_Remove = new List<Vector2Int>();//data of movelist to remove store here
+
+        //check through all the chesspiece's moves and simulate them, on simulate, check if the king chesspiece is in checkmate
+        //this loop will keep on looping untill all the chesspiece present on board at that time has been simulated completelly
+        for (int i = 0; i < SimulatedChessPiece_Moves.Count; i++)
+        {
+            //[declearing field
+            int simulatedChess_PositionAt_X = SimulatedChessPiece_Moves[i].x;
+            int simulatedChess_PositionAt_Y = SimulatedChessPiece_Moves[i].y;
+
+            //get king position
+            //store targetd king's position x and y on simulate_kingPositionOnBoard
+            Vector2Int simulate_kingPositionOnBoard = new Vector2Int(Target_KingPosition.currentX, Target_KingPosition.currentY);
+            //but if king has move from targeted king's position x and y, change upper's targeted position to this x and y position
+            if (Simulated_chessPiece.type == ChessPieceType.King)
+            {
+                simulate_kingPositionOnBoard = new Vector2Int(simulatedChess_PositionAt_X, simulatedChess_PositionAt_Y);
+            }
+            
+            //get king position
+            //now that all the movelist and king position is stored for simulating checkmate.
+            //as simulation shouldn't be shown on real checcboard. 
+            //so, Copy of ChessPiece[,] 2d array is made, not a reference of ChessPiece[,] array
+            ChessPiece[,] Simulation = new ChessPiece[Tile_Count_X, Tile_Count_Y];//made a copy of board for simulation
+            //simulating list of chesspieces that will attack king on next i.e after player's turn is over
+            List<ChessPiece> Simulation_Of_EnemyAttackingPieces = new List<ChessPiece>();//made a copy of Enemy chesspieces for simulation
+            for (int x = 0; x < Tile_Count_X; x++)
+            {
+                for (int y = 0; y < Tile_Count_Y; y++)
+                {
+                    if (Active_chessPieces[x, y] != null)//if there's a chess piece there
+                    {
+                        Simulation[x, y] = Active_chessPieces[x, y];//assigning corresponding position in the Simulation[x, y] array.
+                        /*it will populates with the same chess pieces that are present in the Active_chessPieces array. 
+                        Any modifications made to Active_chessPieces after this point won't affect Simulation,*/
+
+                        if (Simulation[x, y].team != Simulated_chessPiece.team)//if Simulation team is not equal to Simulated_chessPiece.team,it is enemy's piece
+                        {
+                            Simulation_Of_EnemyAttackingPieces.Add(Simulation[x, y]);
+                        }
+                    }
+                }
+            }
+
+            //simulating chess game on "Similation" a copyed board
+            Simulation[actualChess_PositionAt_X, actualChess_PositionAt_Y] = null;//nulling actualChess_PositionAt x and y which is currently clicked piece, cus we are moving away from the clicked piece
+            Simulated_chessPiece.currentX = simulatedChess_PositionAt_X;//need to reset after simulation is done
+            Simulated_chessPiece.currentY = simulatedChess_PositionAt_Y;//need to reset after simulation is done
+            Simulation[simulatedChess_PositionAt_X, simulatedChess_PositionAt_Y] = Simulated_chessPiece;
+
+            //did any of piece that are present on board on that time is destroy/taken out of board during simulation
+            var deadPice = Simulation_Of_EnemyAttackingPieces.Find(aPiece => aPiece.currentX == simulatedChess_PositionAt_X && aPiece.currentY == simulatedChess_PositionAt_Y);
+            if (deadPice != null)
+            {
+                Simulation_Of_EnemyAttackingPieces.Remove(deadPice);
+            }
+            
+            //checking if player's king is in danger for this, 
+            //process of bello for loop: go through all the list simulated enemy chesspiece's moves present on the board at that time (based on "ref Similation")
+            // and add all the list fo array in "pieceMoves" and then add togater to "simMOves"
+            List<Vector2Int> simMOves = new List<Vector2Int>();
+            for (int a = 0; a < Simulation_Of_EnemyAttackingPieces.Count; a++)
+            {
+                var pieceMoves = Simulation_Of_EnemyAttackingPieces[a].GetAvaiable_ChessMove(ref Simulation, Tile_Count_X, Tile_Count_Y);
+                for (int b = 0; b < pieceMoves.Count; b++)
+                {
+                    simMOves.Add(pieceMoves[b]);
+                }
+            }
+
+            //if king is in danger , remove move
+            if (ContainValid_ChessMove(ref simMOves, simulate_kingPositionOnBoard))
+            {
+                List_Of_Move_to_Remove.Add(SimulatedChessPiece_Moves[i]);
+            }
+
+            //resettig data of actual Simulated_chessPiece
+            Simulated_chessPiece.currentX = actualChess_PositionAt_X;
+            Simulated_chessPiece.currentY = actualChess_PositionAt_Y;
+        }
+
+        //REMOVE from current available movelist
+        for (int i = 0; i < List_Of_Move_to_Remove.Count; i++)
+        {
+            SimulatedChessPiece_Moves.Remove(List_Of_Move_to_Remove[i]);//remove all data of movelist stored by the end of the move
+        }
+    }
 
     //operation
     private bool MoveTo(ChessPiece ChessPieceType_reference, int x, int y)
